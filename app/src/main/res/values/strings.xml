@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">BulletinBoardAppKotlin</string>
+
+    <!-- ActionBarDrawerToggle (MainActivity) -->
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+
+    <!-- Main Menu Layout Strings -->
+    <!-- Header -->
+    <string name="need_auth_or_reg">Войдите или зарегистрируйтесь</string>
+    <!-- Объявления -->
+    <string name="ads_title">Объявления</string>
+    <string name="ads_mine_title">Мои объявления</string>
+    <string name="ads_cars_title">Автомобили</string>
+    <string name="ads_computers_title">Компьютеры</string>
+    <string name="ads_smartphones_title">Смартфоны</string>
+    <string name="ads_appliances_title">Бытовая техника</string>
+    <!-- Аккаунт -->
+    <string name="account_title">Аккаунт</string>
+    <string name="account_sign_up_title">Регистрация</string>
+    <string name="account_sign_in_title">Вход в аккаунт</string>
+    <string name="account_sign_out_title">Выход из аккаунта</string>
+
+    <!-- Sign Up In Dialog Strings -->
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_up_action">Зарегистрироваться</string>
+    <string name="sign_up_with_google_action">Зарегистрироваться (Google)</string>
+    <string name="sign_in_action">Войти в аккаунт</string>
+    <string name="sign_in_with_google_action">Войти в аккаунт (Google)</string>
+    <string name="sign_up_error">Не удалось зарегистрироваться!</string>
+    <string name="sign_in_error">Не удалось войти в аккаунт!</string>
+    <string name="sign_in_done">Вы успешно вошли в свой аккаунт!</string>
+    <string name="sign_out_done">Вы вышли из своего аккаунта!</string>
+    <string name="forget_password_action">Забыли пароль?</string>
+    <string name="forget_password_not_specify_email">
+        Укажите почту для сброса пароля!</string>
+    <string name="send_email_reset_password_done">
+        На указанную почту было отправлено письмо для сброса пароля!</string>
+    <string name="send_verification_email_error">
+        Не удалось отправить письмо для подтверждения аккаунта!</string>
+    <string name="send_verification_email_done">
+        На указанную почту было отправлено письмо для подтверждения аккаунта!</string>
+
+    <!-- FirebaseAuth Strings -->
+    <string name="error_email_already_in_use">
+        Адрес электронной почты уже используется другой учетной записью.</string>
+    <string name="error_invalid_email">
+        Адрес электронной почты указан в неправильном формате.</string>
+    <string name="error_wrong_password">
+        Указан неверный пароль или аккаунта с указанной почтой не существует.</string>
+    <string name="error_weak_password">
+        Указанный пароль недействителен. [Пароль должен состоять не менее 6 символов]</string>
+    <string name="error_user_not_found">
+        Нет записи пользователя, соответствующей этому идентификатору.
+        Возможно, пользователь был удален.</string>
+    <string name="link_email_with_google_done">
+        Указанный Email успешно подключен к Google аккаунту.</string>
+    <string name="enter_to_account_with_google">Указанный Email уже используется в Google аккаунте.
+        Пожалуйста, войдите через Google аккаунт.</string>
+
+    <!-- Toolbar Strings -->
+    <string name="new_advertisement">New advertisement</string>
+</resources>
