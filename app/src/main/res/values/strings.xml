@@ -61,8 +61,11 @@
 
     <!-- Toolbar Strings -->
     <string name="new_advertisement">New advertisement</string>
+    <string name="add_image">Добавить изображения</string>
+    <string name="delete_image">Удалить изображения</string>
 
     <!-- Activity Edit Ads Strings -->
     <string name="select_country">* Выберите страну…</string>
     <string name="select_city">* Выберите город…</string>
+
 </resources>
