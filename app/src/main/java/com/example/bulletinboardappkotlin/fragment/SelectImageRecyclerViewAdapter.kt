@@ -2,9 +2,8 @@ package com.example.bulletinboardappkotlin.fragment
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
+import android.graphics.Bitmap
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -12,18 +11,21 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bulletinboardappkotlin.R
 import com.example.bulletinboardappkotlin.activities.EditAdsActivity
+import com.example.bulletinboardappkotlin.databinding.SelectImageFragmentItemBinding
+import com.example.bulletinboardappkotlin.utils.AdapterCallback
+import com.example.bulletinboardappkotlin.utils.ImageManager
 import com.example.bulletinboardappkotlin.utils.ImagePicker
 import com.example.bulletinboardappkotlin.utils.ItemTouchMoveCallback
 
-class SelectImageRecyclerViewAdapter :
+class SelectImageRecyclerViewAdapter(val adapterCallback: AdapterCallback) :
     RecyclerView.Adapter<SelectImageRecyclerViewAdapter.ImageHolder>(),
     ItemTouchMoveCallback.ItemTouchAdapter {
-    val mainArray = ArrayList<String>()
+    val mainArray = ArrayList<Bitmap>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.select_image_fragment_item, parent, false)
-        return ImageHolder(view, parent.context, this)
+        val viewBinding = SelectImageFragmentItemBinding
+            .inflate(LayoutInflater.from(parent.context), parent, false)
+        return ImageHolder(viewBinding, parent.context, this)
     }
 
     override fun onBindViewHolder(holder: ImageHolder, position: Int) {
@@ -46,43 +48,35 @@ class SelectImageRecyclerViewAdapter :
         notifyDataSetChanged()
     }
 
-    class ImageHolder(itemView: View,
+    class ImageHolder(val viewBinding: SelectImageFragmentItemBinding,
                       val context: Context,
-                      val adapter: SelectImageRecyclerViewAdapter)
-        : RecyclerView.ViewHolder(itemView) {
-        private lateinit var tvFragmentItemTitle: TextView
-        lateinit var ivFragmentItemImage: ImageView
-        lateinit var imbEditImage: ImageButton
-        lateinit var imbDeleteImage: ImageButton
+                      val adapter: SelectImageRecyclerViewAdapter) : RecyclerView.ViewHolder(viewBinding.root) {
 
-        fun setData(item: String) {
-            tvFragmentItemTitle = itemView.findViewById(R.id.tvFragmentItemTitle)
-            ivFragmentItemImage = itemView.findViewById(R.id.ivFragmentItemImage)
-            imbEditImage = itemView.findViewById(R.id.imbEditImage)
-            imbDeleteImage = itemView.findViewById(R.id.imbDeleteImage)
-
-            imbEditImage.setOnClickListener {
+        fun setData(bitmap: Bitmap) {
+            viewBinding.imbEditImage.setOnClickListener {
                 ImagePicker.getImages(context as EditAdsActivity, 1,
                     ImagePicker.REQUEST_CODE_GET_SINGLE_IMAGE)
                 context.editImagePosition = adapterPosition
             }
 
-            imbDeleteImage.setOnClickListener {
+            viewBinding.imbDeleteImage.setOnClickListener {
                 adapter.mainArray.removeAt(adapterPosition)
                 adapter.notifyItemRemoved(adapterPosition)
                 for (n in 0 until adapter.mainArray.size) {
                     adapter.notifyItemChanged(n)
                 }
+                adapter.adapterCallback.onItemDelete()
             }
 
-            tvFragmentItemTitle.text =
+            viewBinding.tvFragmentItemTitle.text =
                 context.resources.getStringArray(R.array.title_image_array)[adapterPosition]
-            ivFragmentItemImage.setImageURI(Uri.parse(item))
+            ImageManager.chooseScaleType(viewBinding.ivFragmentItemImage, bitmap)
+            viewBinding.ivFragmentItemImage.setImageBitmap(bitmap)
         }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun updateAdapter(newList: List<String>, needClear: Boolean) {
+    fun updateAdapter(newList: List<Bitmap>, needClear: Boolean) {
         if (needClear) {
             mainArray.clear()
         }

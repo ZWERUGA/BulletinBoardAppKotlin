@@ -5,7 +5,7 @@
     android:id="@+id/place_holder"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:backgroundTint="@color/light_grey"
+    android:backgroundTint="@color/grey_light"
     tools:context=".activities.EditAdsActivity">
 
     <ScrollView
@@ -49,6 +49,17 @@
                     app:layout_constraintEnd_toEndOf="@+id/vpImages"
                     app:layout_constraintTop_toTopOf="@+id/vpImages"
                     app:srcCompat="@android:drawable/ic_menu_edit" />
+
+                <ProgressBar
+                    android:id="@+id/pbLoadedImages"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/vpImages"
+                    app:layout_constraintTop_toTopOf="@+id/vpImages" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
