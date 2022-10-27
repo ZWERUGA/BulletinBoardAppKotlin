@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "552577584035",
+    "firebase_url": "https://bulletinboardappkotlin-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "bulletinboardappkotlin",
     "storage_bucket": "bulletinboardappkotlin.appspot.com"
   },

@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.bulletinboardappkotlin.HelperFunctions.toastMessage
 import com.example.bulletinboardappkotlin.R
 import com.example.bulletinboardappkotlin.adapters.ImageAdapter
+import com.example.bulletinboardappkotlin.data.Advertisement
+import com.example.bulletinboardappkotlin.database.DatabaseManager
 import com.example.bulletinboardappkotlin.databinding.ActivityEditAdsBinding
 import com.example.bulletinboardappkotlin.dialogspinnerhelper.DialogSpinnerHelper
 import com.example.bulletinboardappkotlin.fragment.FragmentCloseInterface
@@ -33,7 +35,11 @@ class EditAdsActivity : AppCompatActivity(), FragmentCloseInterface {
 
     private lateinit var btSelectCountry: Button
     private lateinit var btSelectCity: Button
+    private lateinit var btSelectCategory: Button
+    private lateinit var btPublish: Button
     private lateinit var ibtPickImages: ImageButton
+
+    private val dbManager = DatabaseManager(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +76,8 @@ class EditAdsActivity : AppCompatActivity(), FragmentCloseInterface {
     private fun init() {
         btSelectCountry = rootElement.btSelectCountry
         btSelectCity = rootElement.btSelectCity
+        btSelectCategory = rootElement.btCategory
+        btPublish = rootElement.btPublish
         ibtPickImages = rootElement.ibtPickImages
 
         btSelectCountry.setOnClickListener {
@@ -90,6 +98,15 @@ class EditAdsActivity : AppCompatActivity(), FragmentCloseInterface {
             }
         }
 
+        btSelectCategory.setOnClickListener {
+            val listCategories = resources.getStringArray(R.array.categories).toMutableList() as ArrayList
+                dialog.showSpinnerDialog(this, listCategories, rootElement.btCategory)
+        }
+
+        btPublish.setOnClickListener {
+            dbManager.publishAdvertisement(fillAdvertisement())
+        }
+
         ibtPickImages.setOnClickListener {
             if (imageAdapter.mainArray.size == 0) {
                 ImagePicker
@@ -103,6 +120,26 @@ class EditAdsActivity : AppCompatActivity(), FragmentCloseInterface {
 
         imageAdapter = ImageAdapter()
         rootElement.vpImages.adapter = imageAdapter
+    }
+
+    private fun fillAdvertisement() : Advertisement {
+        val ad: Advertisement
+        rootElement.apply {
+            ad = Advertisement(
+                btSelectCountry.text.toString(),
+                btSelectCity.text.toString(),
+                etTelephone.text.toString(),
+                etIndex.text.toString(),
+                cbWithSend.isChecked.toString(),
+                btCategory.text.toString(),
+                etTitle.text.toString(),
+                etPrice.text.toString(),
+                etDescription.text.toString(),
+                dbManager.db.push().key
+            )
+        }
+
+        return ad
     }
 
     override fun onFragmentClose(list: ArrayList<Bitmap>) {

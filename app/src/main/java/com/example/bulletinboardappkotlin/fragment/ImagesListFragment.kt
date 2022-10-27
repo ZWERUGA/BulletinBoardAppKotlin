@@ -1,6 +1,5 @@
 package com.example.bulletinboardappkotlin.fragment
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -8,11 +7,9 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bulletinboardappkotlin.HelperFunctions.toastMessage
@@ -31,32 +28,36 @@ import kotlinx.coroutines.launch
 private const val TAG = "ImagesListFragmentLog"
 
 class ImagesListFragment(private val fragmentCloseInterface: FragmentCloseInterface,
-                         private val newList: ArrayList<String>?) : Fragment(), AdapterCallback {
-    lateinit var rootElement: ListImagesFragmentBinding
+                         private val newList: ArrayList<String>?)
+    : BaseAdFragment(), AdapterCallback {
+
+    lateinit var binding: ListImagesFragmentBinding
     val adapter = SelectImageRecyclerViewAdapter(this)
     private val dragCallback = ItemTouchMoveCallback(adapter)
     val touchHelper = ItemTouchHelper(dragCallback)
     private var job: Job? = null
     private var addImageButton: MenuItem? = null
 
-    // Начинается отрисовка фрагмента
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        rootElement = ListImagesFragmentBinding.inflate(inflater)
-        return rootElement.root
+        binding = ListImagesFragmentBinding.inflate(layoutInflater)
+        adView = binding.adView
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpToolbar()
-        touchHelper.attachToRecyclerView(rootElement.rcvSelectedImages)
-        rootElement.rcvSelectedImages.layoutManager = LinearLayoutManager(activity)
-        rootElement.rcvSelectedImages.adapter = adapter
-        if (newList != null) {
-            resizeSelectedImages(newList, true)
+        binding.apply {
+            touchHelper.attachToRecyclerView(rcvSelectedImages)
+            rcvSelectedImages.layoutManager = LinearLayoutManager(activity)
+            rcvSelectedImages.adapter = adapter
+            if (newList != null) {
+                resizeSelectedImages(newList, true)
+            }
         }
     }
 
@@ -86,27 +87,35 @@ class ImagesListFragment(private val fragmentCloseInterface: FragmentCloseInterf
         job?.cancel()
     }
 
+    override fun onClose() {
+        super.onClose()
+        activity?.supportFragmentManager?.beginTransaction()
+            ?.remove(this@ImagesListFragment)?.commit()
+    }
+
     private fun setUpToolbar() {
-        rootElement.tbFragment.inflateMenu(R.menu.toolbar_choose_image)
-        addImageButton = rootElement.tbFragment.menu.findItem(R.id.add_image)
-        val deleteImageButton = rootElement.tbFragment.menu.findItem(R.id.delete_image)
+        binding.apply {
+            tbFragment.inflateMenu(R.menu.toolbar_choose_image)
+            addImageButton = tbFragment.menu.findItem(R.id.add_image)
+            val deleteImageButton = tbFragment.menu.findItem(R.id.delete_image)
 
-        rootElement.tbFragment.setNavigationOnClickListener {
-            activity?.supportFragmentManager?.beginTransaction()?.remove(this)?.commit()
-        }
+            tbFragment.setNavigationOnClickListener {
+                showInterstitialAd()
+            }
 
-        addImageButton?.setOnMenuItemClickListener {
-            val imageCount = ImagePicker.MAX_IMAGE_COUNT - adapter.mainArray.size
-            ImagePicker.getImages(activity as AppCompatActivity,
-                imageCount, ImagePicker.REQUEST_CODE_GET_IMAGES)
-            true
-        }
+            addImageButton?.setOnMenuItemClickListener {
+                val imageCount = ImagePicker.MAX_IMAGE_COUNT - adapter.mainArray.size
+                ImagePicker.getImages(activity as AppCompatActivity,
+                    imageCount, ImagePicker.REQUEST_CODE_GET_IMAGES)
+                true
+            }
 
-        deleteImageButton.setOnMenuItemClickListener {
-            adapter.updateAdapter(ArrayList(), true)
-            toastMessage(this, "Все изображения удалены!")
-            addImageButton?.isVisible = true
-            true
+            deleteImageButton.setOnMenuItemClickListener {
+                adapter.updateAdapter(ArrayList(), true)
+                toastMessage(this@ImagesListFragment, "Все изображения удалены!")
+                addImageButton?.isVisible = true
+                true
+            }
         }
     }
 
@@ -114,9 +123,8 @@ class ImagesListFragment(private val fragmentCloseInterface: FragmentCloseInterf
         resizeSelectedImages(newList, false)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setSingleImage(uri: String, position: Int) {
-        val pbEditImage = rootElement.rcvSelectedImages[position]
+        val pbEditImage = binding.rcvSelectedImages[position]
             .findViewById<ProgressBar>(R.id.pbEditImage)
         job = CoroutineScope(Dispatchers.Main).launch {
             pbEditImage.visibility = View.VISIBLE

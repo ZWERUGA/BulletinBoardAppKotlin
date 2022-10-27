@@ -9,8 +9,13 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bulletinboardappkotlin.HelperFunctions.toastMessage
 import com.example.bulletinboardappkotlin.activities.EditAdsActivity
+import com.example.bulletinboardappkotlin.adapters.AdvertisementRecyclerViewAdapter
+import com.example.bulletinboardappkotlin.data.Advertisement
+import com.example.bulletinboardappkotlin.database.DatabaseManager
+import com.example.bulletinboardappkotlin.database.ReadDataCallback
 import com.example.bulletinboardappkotlin.databinding.ActivityMainBinding
 import com.example.bulletinboardappkotlin.dialoghelper.DialogConsts
 import com.example.bulletinboardappkotlin.dialoghelper.DialogHelper
@@ -23,18 +28,22 @@ import com.google.firebase.auth.FirebaseUser
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, ReadDataCallback {
     private lateinit var tvAccountTitle: TextView
 
     private lateinit var rootElement: ActivityMainBinding
     private val dialogHelper = DialogHelper(this)
     val mAuth = FirebaseAuth.getInstance()
+    val dbManager = DatabaseManager(this)
+    val advertisementRecyclerViewAdapter = AdvertisementRecyclerViewAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         rootElement = ActivityMainBinding.inflate(layoutInflater)
         setContentView(rootElement.root)
         init()
+        initRecyclerView()
+        dbManager.readDataFromDatabase()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -65,6 +74,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         tvAccountTitle = rootElement.navigationView
             .getHeaderView(0)
             .findViewById(R.id.tvAccountTitle)
+    }
+
+    private fun initRecyclerView() {
+        rootElement.apply {
+            headerActivityMain.rcView.layoutManager = LinearLayoutManager(this@MainActivity)
+            headerActivityMain.rcView.adapter = advertisementRecyclerViewAdapter
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -125,5 +141,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else {
             user.email
         }
+    }
+
+    override fun readData(list: List<Advertisement>) {
+        advertisementRecyclerViewAdapter.updateAdvertisementAdapter(list)
     }
 }
