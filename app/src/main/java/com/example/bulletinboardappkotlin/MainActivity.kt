@@ -4,38 +4,41 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bulletinboardappkotlin.HelperFunctions.toastMessage
+import com.example.bulletinboardappkotlin.accounthelper.AccountHelper
 import com.example.bulletinboardappkotlin.activities.EditAdsActivity
 import com.example.bulletinboardappkotlin.adapters.AdvertisementRecyclerViewAdapter
-import com.example.bulletinboardappkotlin.data.Advertisement
-import com.example.bulletinboardappkotlin.database.DatabaseManager
-import com.example.bulletinboardappkotlin.database.ReadDataCallback
 import com.example.bulletinboardappkotlin.databinding.ActivityMainBinding
 import com.example.bulletinboardappkotlin.dialoghelper.DialogConsts
 import com.example.bulletinboardappkotlin.dialoghelper.DialogHelper
 import com.example.bulletinboardappkotlin.dialoghelper.GoogleAccountConsts
+import com.example.bulletinboardappkotlin.model.Advertisement
+import com.example.bulletinboardappkotlin.viewmodel.FirebaseViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.navigation.NavigationView
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, ReadDataCallback {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
+    AdvertisementRecyclerViewAdapter.AdvertisementHolder.Listener {
     private lateinit var tvAccountTitle: TextView
 
     private lateinit var rootElement: ActivityMainBinding
     private val dialogHelper = DialogHelper(this)
-    val mAuth = FirebaseAuth.getInstance()
-    val dbManager = DatabaseManager(this)
-    val advertisementRecyclerViewAdapter = AdvertisementRecyclerViewAdapter()
+    val mAuth = Firebase.auth
+    val advertisementRecyclerViewAdapter = AdvertisementRecyclerViewAdapter(this)
+    private val firebaseViewModel: FirebaseViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,20 +46,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(rootElement.root)
         init()
         initRecyclerView()
-        dbManager.readDataFromDatabase()
+        initViewModel()
+        firebaseViewModel.loadAllAds()
+        bottomMenuOnClick()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.toolbar_new_ad_button, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.new_advertisement) {
-            val intent = Intent(this, EditAdsActivity::class.java)
-            startActivity(intent)
-        }
-        return super.onOptionsItemSelected(item)
+    override fun onResume() {
+        super.onResume()
+        rootElement.headerActivityMain.bNavView.selectedItemId = R.id.id_home
     }
 
     override fun onStart() {
@@ -64,16 +61,51 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         updateUI(mAuth.currentUser)
     }
 
+    private fun initViewModel() {
+        firebaseViewModel.liveAdsData.observe(this) {
+            advertisementRecyclerViewAdapter.updateAdvertisementAdapter(it)
+            rootElement.headerActivityMain.tvEmpty.visibility =
+                if (it.isEmpty()) View.VISIBLE else View.GONE
+        }
+    }
+
     private fun init() {
         setSupportActionBar(rootElement.headerActivityMain.tbActivityMain)
-        val toggle = ActionBarDrawerToggle(this, rootElement.drawerLayout,
-            rootElement.headerActivityMain.tbActivityMain, R.string.open, R.string.close)
+        val toggle = ActionBarDrawerToggle(
+            this, rootElement.drawerLayout,
+            rootElement.headerActivityMain.tbActivityMain, R.string.open, R.string.close
+        )
         rootElement.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         rootElement.navigationView.setNavigationItemSelectedListener(this)
         tvAccountTitle = rootElement.navigationView
             .getHeaderView(0)
             .findViewById(R.id.tvAccountTitle)
+    }
+
+    private fun bottomMenuOnClick() = with(rootElement) {
+        headerActivityMain.bNavView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.id_home -> {
+                    firebaseViewModel.loadAllAds()
+                    headerActivityMain.tbActivityMain.title = getString(R.string.toolbar_all_ads)
+                }
+                R.id.id_favs -> {
+                    firebaseViewModel.loadMyFavourites()
+                    headerActivityMain.tbActivityMain.title =
+                        getString(R.string.toolbar_favourite_ads)
+                }
+                R.id.id_my_ads -> {
+                    firebaseViewModel.loadMyAds()
+                    headerActivityMain.tbActivityMain.title = getString(R.string.toolbar_mine_ads)
+                }
+                R.id.id_new_advertisement -> {
+                    val intent = Intent(this@MainActivity, EditAdsActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+            true
+        }
     }
 
     private fun initRecyclerView() {
@@ -100,7 +132,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.ads_mine_title -> {
                 toastMessage(this, "Мои объявления")
             }
@@ -123,11 +155,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 dialogHelper.createSignDialog(DialogConsts.SIGN_IN_STATE)
             }
             R.id.account_sign_out_title -> {
+                if (mAuth.currentUser?.isAnonymous == true) {
+                    rootElement.drawerLayout.closeDrawer(GravityCompat.START)
+                    return true
+                }
                 updateUI(null)
                 mAuth.signOut()
                 dialogHelper.accountHelper.signOutGoogle()
-                toastMessage(this, resources.getString(
-                    R.string.sign_out_done))
+                toastMessage(
+                    this, resources.getString(
+                        R.string.sign_out_done
+                    )
+                )
             }
         }
 
@@ -136,14 +175,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun updateUI(user: FirebaseUser?) {
-        tvAccountTitle.text = if (user == null) {
-            resources.getString(R.string.need_auth_or_reg)
-        } else {
-            user.email
+        if (user == null) {
+            dialogHelper.accountHelper.signInAnonymously(object: AccountHelper.Listener {
+                override fun onComplete() {
+                    tvAccountTitle.text = getString(R.string.account_sign_in_anonymously)
+                }
+            })
+        } else if (user.isAnonymous) {
+            tvAccountTitle.text = getString(R.string.account_sign_in_anonymously)
+        } else if (!user.isAnonymous) {
+            tvAccountTitle.text = user.email
         }
     }
 
-    override fun readData(list: List<Advertisement>) {
-        advertisementRecyclerViewAdapter.updateAdvertisementAdapter(list)
+    companion object {
+        const val EDIT_STATE = "edit_state"
+        const val ADS_DATA = "ads_data"
+    }
+
+    override fun onDeleteItem(advertisement: Advertisement) {
+        firebaseViewModel.deleteItem(advertisement)
+    }
+
+    override fun onAdvertisementViewed(advertisement: Advertisement) {
+        firebaseViewModel.advertisementViewed(advertisement)
+    }
+
+    override fun onFavouriteClicked(advertisement: Advertisement) {
+        firebaseViewModel.onFavouriteClick(advertisement)
     }
 }

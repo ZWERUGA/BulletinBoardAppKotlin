@@ -20,6 +20,7 @@
     <string name="account_sign_up_title">Регистрация</string>
     <string name="account_sign_in_title">Вход в аккаунт</string>
     <string name="account_sign_out_title">Выход из аккаунта</string>
+    <string name="account_sign_in_anonymously">Гость</string>
 
     <!-- Sign Up In Dialog Strings -->
     <string name="email_hint">Email</string>
@@ -63,6 +64,9 @@
     <string name="new_advertisement">New advertisement</string>
     <string name="add_image">Добавить изображения</string>
     <string name="delete_image">Удалить изображения</string>
+    <string name="toolbar_all_ads">Все объявления</string>
+    <string name="toolbar_mine_ads">Мои объявления</string>
+    <string name="toolbar_favourite_ads">Избранное</string>
 
     <!-- Activity Edit Ads Strings -->
     <string name="select_country">* Выберите страну…</string>
@@ -84,6 +88,18 @@
     <string name="send">Отправка</string>
     <string name="with_send_checkbox">С отправкой</string>
     <string name="publish">Опубликовать</string>
+
+    <!-- Bottom Navigation Menu Strings -->
+    <string name="bottom_nav_new_advertisement">Нов. объяв.</string>
+    <string name="bottom_nav_mine_ads">Мои объяв.</string>
+    <string name="bottom_nav_favourites">Избранное</string>
+    <string name="bottom_nav_home">Домой</string>
+
+    <!-- Advertisement List Item Strings -->
+    <string name="price_title">Цена:</string>
+
+    <!-- Header Activity Main Strings -->
+    <string name="favourites_list_empty">Вы не добавили объявлений в избранное!</string>
 
     <!-- Ad View String -->
     <string name="banner_ad_id">ca-app-pub-3940256099942544/6300978111</string>
